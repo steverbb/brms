@@ -27,6 +27,10 @@ library(brms)
 
 As a simple example, we use poisson regression to model the seizure counts in epileptic patients to investigate whether the treatment (represented by variable `Trt`) can reduce the seizure counts and whether the effect of the treatment varies with the (standardized) baseline number of seizures a person had before treatment (variable `zBase`). As we have multiple observations per person, a group-level intercept is incorporated to account for the resulting dependency in the data.
 
+The below will take a while to compile Stan program.
+
+Find Stan code in folder inst $->$ chunks
+
 ``` r
 fit1 <- brm(count ~ zAge + zBase * Trt + (1|patient),
             data = epilepsy, family = poisson())
@@ -35,6 +39,7 @@ fit1 <- brm(count ~ zAge + zBase * Trt + (1|patient),
 The results (i.e., posterior draws) can be investigated using
 
 ``` r
+# the results are different since there are random process, need to set random seed
 summary(fit1)
 #>  Family: poisson 
 #>   Links: mu = log 
