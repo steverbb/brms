@@ -14,17 +14,22 @@
     vector[NB] out;
     if (Dls == 1) {
       // one dimensional or isotropic GP
-      real constant = square(sdgp) * lscale[1])^D; # edit it
-      real neg_half_lscale2 = -0.5 * square(lscale[1]); # edit it
+      real constant = square(sdgp) * pow(2, D) * pow(pi(), (D - 1) / 2.0) * tgamma((D + 1) / 2.0) / lscale[1];
+      real inverse_l2 = 1 / square(lscale[1]);
+      real four_pi2 = 4 * square(pi());
+      real power = -(D + 1) / 2.0;
       for (m in 1:NB) {
-        out[m] = constant * exp(neg_half_lscale2 * dot_self(x[m])); # edit it
+        out[m] = constant * pow(inverse_l2 + four_pi2 * dot_self(x[m]), power);
       }
     } else {
       // multi-dimensional non-isotropic GP
-      real constant = square(sdgp) * prod(lscale); # edit it
-      vector[Dls] neg_half_lscale2 = -0.5 * square(lscale); # edit it
+      real norm_l = sqrt(dot_self(lscale));
+      real constant = square(sdgp) * pow(2, D) * pow(pi(), (D - 1) / 2.0) * tgamma((D + 1) / 2.0) / norm_l;
+      real inverse_l2 = 1 / square(norm_l);
+      real four_pi2 = 4 * square(pi());
+      real power = -(D + 1) / 2.0;
       for (m in 1:NB) {
-        out[m] = constant * exp(dot_product(neg_half_lscale2, square(x[m]))); # edit it
+        out[m] = constant * pow(inverse_l2 + four_pi2 * dot_self(x[m]), power);
       }
     }
     return out;
