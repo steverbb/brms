@@ -18,7 +18,7 @@
       // multi-dimensional non-isotropic GP
       cov = gp_exponential_cov(x[, 1], sdgp, lscale[1]);
       for (d in 2:Dls) {
-        cov = cov .* gp_exponential_cov(x[, d], 1, lscale[d]); # .* is element-wise multiplication
+        cov = cov .* gp_exponential_cov(x[, d], 1, lscale[d]); // .* is element-wise multiplication
       }
     }
     for (n in 1:N) {
