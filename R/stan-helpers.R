@@ -72,6 +72,8 @@ stan_global_defs <- function(bterms, prior, ranef, threads) {
     str_add(out$fun) <- "  #include 'fun_monotonic.stan'\n"
   }
   if (length(get_effect(bterms, "gp"))) {
+    # add another if, or a switch, to change the stan file it used!
+    # we still use the gp name and the same spetral density name in the stan code file
     # TODO: include functions selectively
     str_add(out$fun) <- "  #include 'fun_gaussian_process.stan'\n"
     str_add(out$fun) <- "  #include 'fun_gaussian_process_approx.stan'\n"
