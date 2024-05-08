@@ -5,7 +5,7 @@
 # TODO: refactor to not require extraction of information from all model parts
 #   'expand_include_statements' removes duplicates which opens the door
 #   for adding Stan functions at better places rather than globally here
-stan_global_defs <- function(bterms, prior, ranef, threads) {
+stan_global_defs <- function(bterms, prior, ranef, threads, ...) {
   families <- family_names(bterms)
   links <- family_info(bterms, "link")
   unique_combs <- !duplicated(paste0(families, ":", links))
@@ -72,12 +72,26 @@ stan_global_defs <- function(bterms, prior, ranef, threads) {
     str_add(out$fun) <- "  #include 'fun_monotonic.stan'\n"
   }
   if (length(get_effect(bterms, "gp"))) {
-    # add another if, or a switch, to change the stan file it used!
-    # we still use the gp name and the same spetral density name in the stan code file
+    # Capture additional arguments
+    #arguments <- list(...)
+    # Check if 'kernel' is in the list of additional arguments
+    # TODO: add more choices for multiple gp, specific gaussian kernel for specific process
+    kernel <- if (is.null(get_effect(bterms,"gp")[[1]][[2]]$cov)) {
+      "exp_quad"  # Use the kernel provided in the arguments
+    } else {
+      get_effect(bterms,"gp")[[1]][[2]]$cov  # Use a default kernel if not specified
+    }
     # TODO: include functions selectively
-    str_add(out$fun) <- "  #include 'fun_gaussian_process.stan'\n"
-    str_add(out$fun) <- "  #include 'fun_gaussian_process_approx.stan'\n"
-    str_add(out$fun) <- "  #include 'fun_which_range.stan'\n"
+    if (kernel=="exp_quad"){
+      str_add(out$fun) <- "  #include 'fun_gaussian_process.stan'\n"
+      str_add(out$fun) <- "  #include 'fun_gaussian_process_approx.stan'\n"
+      str_add(out$fun) <- "  #include 'fun_which_range.stan'\n"
+    }
+    if (kernel=="exp"){
+      str_add(out$fun) <- "  #include 'fun_gaussian_process_exp.stan'\n"
+      str_add(out$fun) <- "  #include 'fun_gaussian_process_approx_exp.stan'\n"
+      str_add(out$fun) <- "  #include 'fun_which_range.stan'\n"
+    }
   }
   acterms <- get_effect(bterms, "ac")
   acefs <- lapply(acterms, tidy_acef)

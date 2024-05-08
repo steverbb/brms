@@ -134,7 +134,7 @@ stancode.default <- function(object, data, family = gaussian(),
     meef, prior = prior, threads = threads, normalize = normalize
   )
   scode_global_defs <- stan_global_defs(
-    bterms, prior = prior, ranef = ranef, threads = threads
+    bterms, prior = prior, ranef = ranef, threads = threads, ...
   )
 
   # extend Stan's likelihood part

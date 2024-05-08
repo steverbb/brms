@@ -115,7 +115,7 @@
 #' @export
 gp <- function(..., by = NA, k = NA, cov = "exp_quad", iso = TRUE,
                gr = TRUE, cmc = TRUE, scale = TRUE, c = 5/4) {
-  cov <- match.arg(cov, choices = c("exp_quad"))
+  cov <- match.arg(cov, choices = c("exp_quad","exp"))
   call <- match.call()
   label <- deparse0(call)
   vars <- as.list(substitute(list(...)))[-1]
