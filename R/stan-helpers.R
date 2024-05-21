@@ -5,7 +5,7 @@
 # TODO: refactor to not require extraction of information from all model parts
 #   'expand_include_statements' removes duplicates which opens the door
 #   for adding Stan functions at better places rather than globally here
-stan_global_defs <- function(bterms, prior, ranef, threads, ...) {
+stan_global_defs <- function(bterms, prior, ranef, threads) {
   families <- family_names(bterms)
   links <- family_info(bterms, "link")
   unique_combs <- !duplicated(paste0(families, ":", links))
@@ -72,16 +72,24 @@ stan_global_defs <- function(bterms, prior, ranef, threads, ...) {
     str_add(out$fun) <- "  #include 'fun_monotonic.stan'\n"
   }
   if (length(get_effect(bterms, "gp"))) {
-    # Capture additional arguments
-    #arguments <- list(...)
-    # Check if 'kernel' is in the list of additional arguments
-    # TODO: add more choices for multiple gp, specific gaussian kernel for specific process
-    kernel <- if (is.null(get_effect(bterms,"gp")[[1]][[2]]$cov)) {
-      "exp_quad"  # Use the kernel provided in the arguments
-    } else {
-      get_effect(bterms,"gp")[[1]][[2]]$cov  # Use a default kernel if not specified
-    }
+    # TODO: add more choices for multiple gp, but use the same gaussian kernel for all process
+    library(rlang)
+    #kernel <- if (is.null(get_effect(bterms,"gp")[[1]][[2]]$cov)) {
+    #  "exp_quad"  # Use the kernel provided in the arguments
+    #} else {
+    #  get_effect(bterms,"gp")[[1]][[2]]$cov  # Use a default kernel if not specified
+    #}
     # TODO: include functions selectively
+    library(stringr)
+    gp_string <- as.character(get_effect(bterms,"gp"))
+    gp_term_str <- str_extract_all(gp_string, "gp\\(.*?\\)")[[1]]
+    cov_match <- str_match(gp_term_str, "cov\\s*=\\s*\"([^\"]*)\"")
+    cov_array <- sapply(cov_match[,2], function(x) ifelse(is.na(x), "exp_quad", x))
+    if (!all(cov_array == cov_array[1])) {
+      warning("gp kernels are not the same, use the first one.")
+    }
+    library(brms)
+    kernel = cov_array[1]
     if (kernel=="exp_quad"){
       str_add(out$fun) <- "  #include 'fun_gaussian_process.stan'\n"
       str_add(out$fun) <- "  #include 'fun_gaussian_process_approx.stan'\n"
